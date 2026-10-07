@@ -1,43 +1,60 @@
-# DualCall
+# DualCall 2.0 📱🔄📱
 
-Android telefona gelen **arama ve SMS**'leri internet üzerinden **iOS / Web** cihaza aktarır; iOS tarafında tam ekran arama ekranı açar, doğrulama kodlarını (OTP) tek dokunuşla kopyalatır. Hesap yok: yalnızca 6 haneli eşleşme kodu.
+DualCall, iki akıllı telefonu birbirine bağlayarak çağrıları, SMS'leri ve bildirimleri güvenli bir şekilde yönlendirmenizi sağlayan yeni nesil bir P2P köprü uygulamasıdır. 
 
-```
-dualcall/
-├── server/   Node.js + Socket.IO relay (bellek içi kümeler)
-└── mobile/   Expo (React Native) istemci: iOS, Android, Web
-```
+Artık internet bağlantısı olan dünyanın her yerinden; sim kartınızın bulunduğu cihazı bir "Sunucu/Verici" gibi evde bırakıp, diğer cihazınız üzerinden gelen tüm çağrıları sanki doğrudan o telefona geliyormuş gibi cevaplayabilir ve yönetebilirsiniz.
 
-## Çalıştırma
+## 🌟 Yeni Nesil Özellikler (2.0)
 
-**1) Sunucu** (Node 18+)
+- **🌍 Küresel P2P Bağlantı:** Eski lokal ağ kısıtlaması kaldırıldı. Render üzerindeki röle (relay) sunucusu sayesinde iki cihaz farklı internet ağlarında (hatta farklı ülkelerde) olsa bile WebRTC üzerinden bağlanabilir.
+- **🎙️ Native CallKit Entegrasyonu (iOS):** İnternet üzerinden gelen aramalar, iPhone'unuzda WhatsApp veya normal bir telefon araması gibi Apple'ın kilit ekranındaki "Arama (CallKit)" arayüzü üzerinden çalar. Ses doğrudan ahizeye veya Bluetooth cihazınıza aktarılır.
+- **🤖 Kusursuz Arka Plan (Android):** Android cihazlar için optimize edilmiş `Foreground Service` yapısı sayesinde, Android telefon ekranı kapalı olsa veya uyku modunda olsa dahi arka planda gelen aramaları ve SMS'leri yakalayıp diğer cihaza iletir.
+- **📷 QR Kod ile Hızlı Eşleşme:** Artık uzun eşleşme kodlarını manuel girmek yerine, cihaz kamerasıyla ekrandaki QR kodu okutarak saniyeler içinde iki cihazı bağlayabilirsiniz.
+- **🔒 Şifreli ve Kayıtsız (Privacy-First):** İletişim tamamen P2P (cihazdan cihaza) WebRTC şifrelemesiyle aktarılır. Bulut sunucuda ses kayıtları, SMS'ler veya arama geçmişleri **asla tutulmaz**. (Detaylar için [Gizlilik Politikamıza](https://dualcell-relay.onrender.com/privacy) göz atın.)
+
+## 🛠 Teknik Mimari
+
+Proje iki ana klasörden oluşur:
+
+### 1. `server/` (Röle Sunucusu)
+Sadece cihazların birbirini internet üzerinden bulması ve eşleşmesi için (Signaling) kullanılan Node.js & Socket.io sunucusudur.
+- Buluta (Render.com) otomatik olarak `deploy` edilecek şekilde optimize edilmiştir.
+- P2P eşleşme sağlandıktan sonra medya trafiği sunucu üzerinden geçmez (WebRTC).
+- Uyku modunu engellemek için `setInterval` ping mekanizması içerir.
+
+### 2. `mobile/` (Expo & React Native)
+- **Expo Application Services (EAS):** iOS ve Android için native modülleri bulutta derleyecek şekilde `app.json` ve `eas.json` ayarlanmıştır.
+- **Custom Config Plugins:** 
+  - `withDualCallAndroid.js`: Android tarafındaki izinleri ve arka plan servislerini (Foreground) native olarak `AndroidManifest.xml` içine yazar.
+  - `withDualCallIos.js`: iOS tarafında CallKit (`RNCallKeep`) ve VoIP Push (`PushKit`) özelliklerini `AppDelegate.mm` içine inject eder.
+- **WebRTC:** `react-native-webrtc` üzerinden RTC Peer Connection kurulur. STUN/TURN sunucuları sayesinde NAT arkasında bile ses köprüsü kurulabilir.
+
+## 🚀 Kurulum & Geliştirme
+
+### Röle Sunucusunu Başlatmak:
 ```bash
-cd server && npm install && npm run dev      # http://localhost:4242  (sağlık: /health)
+cd server
+npm install
+npm run dev
 ```
 
-**2) Mobil** (Node 22.13+)
+### Mobil Uygulamayı Geliştirmek:
 ```bash
 cd mobile
 npm install
-npx expo install --fix       # paket sürümlerini Expo SDK 57 ile hizalar
-npx expo start --web         # hızlı deneme: iki tarayıcı sekmesi + 🧪 Test sekmesi
+# Sadece UI değişiklikleri için:
+npx expo start
+
+# Native CallKit ve Android Servislerini test etmek için (Prebuild & Run):
+eas build --profile development --platform all
 ```
-Gerçek cihazlarda **Expo Go yetmez** (WebRTC, incall-manager ve Android köprüsü yerel kod ister). Geliştirme derlemesi:
-```bash
-npx expo run:android         # Android (verici)
-npx expo run:ios             # iOS (alıcı), macOS + Xcode gerekir
-```
-`prebuild` sırasında `plugins/withDualCallAndroid.js`; izinleri, receiver/servis tanımlarını ekler, `src/native/*.kt` dosyalarını Android projesine kopyalar ve `DualCallPackage`'ı kaydeder.
 
-**Sunucu adresi:** telefonlar `localhost`'a ulaşamaz. Eşleşme ekranındaki "Sunucu adresi"ne bilgisayarın yerel IP'sini yazın (`http://192.168.1.20:4242`). Android emülatöründe `http://10.0.2.2:4242`. Üretimde `https://` kullanın ve `app.json` içindeki `usesCleartextTraffic` ayarını kapatın.
+## 📦 Market Yayınlama Durumu
 
-**Test:** 1. cihazda "Yeni Kod Üret", 2. cihazda koda bağlan. Android'de Test sekmesinden senaryo gönderirseniz olay sunucu üzerinden iOS'a gider; iOS/Web'de senaryolar yerel çalışır.
+Uygulama App Store ve Google Play gereksinimlerine göre donatılmıştır:
+* Gerekli tüm `Info.plist` açıklamaları (Mikrofon, Kamera, Kişiler) mevcuttur.
+* `android.permission.FOREGROUND_SERVICE_SPECIAL_USE` vb. hassas izinler, sadece "Verici" modundayken batarya optimizasyonu hariç tutularak kullanılır.
+* **Uygulama Kimliği:** `com.dualcall.app` (App Store Connect API üzerinden otomatik deploy sağlanabilir).
 
-## Bilinmesi gerekenler
-
-- **Çağrı sesi köprüsü sınırlıdır.** Android, üçüncü taraf uygulamaların hücresel görüşme sesini yakalamasına izin vermez. Köprü, Android'de hoparlörü açıp mikrofonla dinleme (akustik) yöntemini kullanır; ses kalitesi ve gizlilik sınırlıdır. Sinyalleşme (kabul / red / kapatma / arama başlatma) ise tam çalışır (`TelecomManager`).
-- **Kilitli iPhone'da gerçek CallKit zili yok.** Uygulama açıkken tam ekran modal çalar; arka planda yalnızca bildirim (Expo Push; EAS `projectId` gerekir) gelir. Kilit ekranında CallKit/VoIP push için ayrı yerel modül (ör. `react-native-callkeep`) ve Apple VoIP yetkisi gerekir.
-- **Ön plan servisi türü** `phoneCall` yerine `specialUse`: `phoneCall` türü Android 14+'ta yalnızca telefon uygulamaları için izinli. Pil optimizasyonunu eşleşme ekranındaki düğmeyle kapatın.
-- **Google Play** `RECEIVE_SMS` / `READ_CALL_LOG` izinlerini kısıtlar; bu uygulama APK ile yan yükleme (sideload) için uygundur.
-- **Güvenlik:** eşleşme tamamlanınca kod kilitlenir (2 cihaz), hatalı kod denemesi IP başına sınırlanır, yeniden bağlanma cihaza özel gizli anahtarla yapılır. Kodunuzu paylaşmayın. Sunucuyu `https/wss` arkasında çalıştırın. Kümeler bellekte tutulur; sunucu yeniden başlarsa yeniden eşleşin.
-- OTP ayrıştırma iki kalıp kullanır: `kod: 1234` ve `582914 nolu şifreniz`.
+---
+*Geliştiren: Halil Emre*
