@@ -27,20 +27,21 @@ export function safe(fn) {
 }
 
 export function normalizeServerUrl(raw) {
-  if (!raw) return 'http://localhost:4242';
+  if (!raw) return 'https://dualcell-relay.onrender.com';
   let clean = raw.trim();
   if (!/^https?:\/\//i.test(clean)) {
     clean = `http://${clean}`;
   }
   try {
     const u = new URL(clean);
-    if (!u.port) {
+    // Sadece localhost veya IP adresiyse ve port girilmemişse 4242 ekle
+    if (!u.port && (u.hostname === 'localhost' || /^(\d{1,3}\.){3}\d{1,3}$/.test(u.hostname))) {
       u.port = '4242';
       clean = u.origin;
     }
   } catch {
-    // regex fallback
-    if (!clean.includes(':', 7)) {
+    // Regex fallback
+    if (!clean.includes(':', 7) && (clean.includes('localhost') || /^http:\/\/(\d{1,3}\.){3}\d{1,3}$/.test(clean))) {
       clean = `${clean}:4242`;
     }
   }
