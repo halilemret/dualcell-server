@@ -1,60 +1,37 @@
-# DualCall 2.0 📱🔄📱
+# DualCall
 
-DualCall, iki akıllı telefonu birbirine bağlayarak çağrıları, SMS'leri ve bildirimleri güvenli bir şekilde yönlendirmenizi sağlayan yeni nesil bir P2P köprü uygulamasıdır. 
+*(Scroll down for Turkish / Türkçe versiyon için aşağı kaydırın)*
 
-Artık internet bağlantısı olan dünyanın her yerinden; sim kartınızın bulunduğu cihazı bir "Sunucu/Verici" gibi evde bırakıp, diğer cihazınız üzerinden gelen tüm çağrıları sanki doğrudan o telefona geliyormuş gibi cevaplayabilir ve yönetebilirsiniz.
+DualCall is a bridge application that connects your two smartphones, allowing you to securely route calls and SMS messages between them.
 
-## 🌟 Yeni Nesil Özellikler (2.0)
+Leave your primary phone (with the SIM card) at home, at the office, or charging. By carrying only your secondary device, you can answer incoming calls, read SMS messages, and stay connected from anywhere in the world—as long as both devices have internet access.
 
-- **🌍 Küresel P2P Bağlantı:** Eski lokal ağ kısıtlaması kaldırıldı. Render üzerindeki röle (relay) sunucusu sayesinde iki cihaz farklı internet ağlarında (hatta farklı ülkelerde) olsa bile WebRTC üzerinden bağlanabilir.
-- **🎙️ Native CallKit Entegrasyonu (iOS):** İnternet üzerinden gelen aramalar, iPhone'unuzda WhatsApp veya normal bir telefon araması gibi Apple'ın kilit ekranındaki "Arama (CallKit)" arayüzü üzerinden çalar. Ses doğrudan ahizeye veya Bluetooth cihazınıza aktarılır.
-- **🤖 Kusursuz Arka Plan (Android):** Android cihazlar için optimize edilmiş `Foreground Service` yapısı sayesinde, Android telefon ekranı kapalı olsa veya uyku modunda olsa dahi arka planda gelen aramaları ve SMS'leri yakalayıp diğer cihaza iletir.
-- **📷 QR Kod ile Hızlı Eşleşme:** Artık uzun eşleşme kodlarını manuel girmek yerine, cihaz kamerasıyla ekrandaki QR kodu okutarak saniyeler içinde iki cihazı bağlayabilirsiniz.
-- **🔒 Şifreli ve Kayıtsız (Privacy-First):** İletişim tamamen P2P (cihazdan cihaza) WebRTC şifrelemesiyle aktarılır. Bulut sunucuda ses kayıtları, SMS'ler veya arama geçmişleri **asla tutulmaz**. (Detaylar için [Gizlilik Politikamıza](https://dualcell-relay.onrender.com/privacy) göz atın.)
+## How It Works
+DualCall transforms your SIM-equipped device into a "Broadcaster". When a call or SMS arrives on this device, it securely forwards the audio and text in real-time to your secondary device ("Receiver") over the internet. 
 
-## 🛠 Teknik Mimari
+To connect your devices, simply generate a pairing code on one device and scan the QR code with the other. Once paired, the connection is locked to these two devices.
 
-Proje iki ana klasörden oluşur:
-
-### 1. `server/` (Röle Sunucusu)
-Sadece cihazların birbirini internet üzerinden bulması ve eşleşmesi için (Signaling) kullanılan Node.js & Socket.io sunucusudur.
-- Buluta (Render.com) otomatik olarak `deploy` edilecek şekilde optimize edilmiştir.
-- P2P eşleşme sağlandıktan sonra medya trafiği sunucu üzerinden geçmez (WebRTC).
-- Uyku modunu engellemek için `setInterval` ping mekanizması içerir.
-
-### 2. `mobile/` (Expo & React Native)
-- **Expo Application Services (EAS):** iOS ve Android için native modülleri bulutta derleyecek şekilde `app.json` ve `eas.json` ayarlanmıştır.
-- **Custom Config Plugins:** 
-  - `withDualCallAndroid.js`: Android tarafındaki izinleri ve arka plan servislerini (Foreground) native olarak `AndroidManifest.xml` içine yazar.
-  - `withDualCallIos.js`: iOS tarafında CallKit (`RNCallKeep`) ve VoIP Push (`PushKit`) özelliklerini `AppDelegate.mm` içine inject eder.
-- **WebRTC:** `react-native-webrtc` üzerinden RTC Peer Connection kurulur. STUN/TURN sunucuları sayesinde NAT arkasında bile ses köprüsü kurulabilir.
-
-## 🚀 Kurulum & Geliştirme
-
-### Röle Sunucusunu Başlatmak:
-```bash
-cd server
-npm install
-npm run dev
-```
-
-### Mobil Uygulamayı Geliştirmek:
-```bash
-cd mobile
-npm install
-# Sadece UI değişiklikleri için:
-npx expo start
-
-# Native CallKit ve Android Servislerini test etmek için (Prebuild & Run):
-eas build --profile development --platform all
-```
-
-## 📦 Market Yayınlama Durumu
-
-Uygulama App Store ve Google Play gereksinimlerine göre donatılmıştır:
-* Gerekli tüm `Info.plist` açıklamaları (Mikrofon, Kamera, Kişiler) mevcuttur.
-* `android.permission.FOREGROUND_SERVICE_SPECIAL_USE` vb. hassas izinler, sadece "Verici" modundayken batarya optimizasyonu hariç tutularak kullanılır.
-* **Uygulama Kimliği:** `com.dualcall.app` (App Store Connect API üzerinden otomatik deploy sağlanabilir).
+## Why It Is Secure
+Privacy is the foundation of DualCall. 
+- **End-to-End P2P Connection:** Calls and messages are routed directly from one device to the other using WebRTC technology. 
+- **No Data Retention:** Our background servers are only used to help your devices find each other initially. We do not (and cannot) store, record, or listen to your calls, contacts, or messages.
+- **Direct Encryption:** All transmitted data is encrypted locally on your device before it travels over the network.
 
 ---
-*Geliştiren: Halil Emre*
+
+# DualCall (Türkçe)
+
+DualCall, iki akıllı telefonunuzu birbirine bağlayarak çağrıları ve SMS'leri cihazlar arasında güvenli bir şekilde yönlendirmenizi sağlayan bir köprü uygulamasıdır.
+
+SIM kartınızın takılı olduğu ana telefonunuzu evde, ofiste veya şarjda bırakabilirsiniz. Sadece ikinci cihazınızı yanınızda taşıyarak dünyanın neresinde olursanız olun gelen aramaları cevaplayabilir, SMS'lerinizi okuyabilir ve iletişimi koparmadan hayatınıza devam edebilirsiniz (tek ihtiyacınız olan her iki cihazda da internet bağlantısı olmasıdır).
+
+## Nasıl Çalışır?
+DualCall, SIM kartlı cihazınızı bir "Verici" haline getirir. Bu cihaza bir arama veya SMS geldiğinde, ses ve metin gerçek zamanlı olarak internet üzerinden ikinci cihazınıza ("Alıcı") aktarılır.
+
+Cihazlarınızı birbirine bağlamak için bir cihazda eşleşme kodu oluşturmanız ve diğer cihazın kamerasıyla ekrandaki QR kodu okutmanız yeterlidir. Eşleşme tamamlandığında bağlantı kilitlenir ve araya üçüncü bir cihaz giremez.
+
+## Neden Güvenlidir?
+DualCall'un temelinde gizlilik yatar.
+- **Uçtan Uca P2P Bağlantı:** Çağrılar ve mesajlar WebRTC teknolojisi kullanılarak doğrudan bir cihazdan diğerine aktarılır.
+- **Veri Kaydedilmez:** Sunucularımız yalnızca cihazlarınızın internet üzerinde birbirini ilk başta bulabilmesi için kullanılır. Aramalarınızı, kişilerinizi veya SMS mesajlarınızı asla kaydetmeyiz, sunucularımızda tutmayız ve dinlemeyiz.
+- **Şifreli İletim:** Aktarılan tüm veriler, internet üzerinden gönderilmeden önce cihazınızda yerel olarak tamamen şifrelenir.
