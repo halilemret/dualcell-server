@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "DualCall",
+    "slug": "dualcall",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "dualcall",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0F19",
+    "ios": {
+      "bundleIdentifier": "com.dualcall.app",
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["audio", "remote-notification"],
+        "NSMicrophoneUsageDescription": "Sesli köprü için mikrofon gerekir.",
+        "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true }
+      }
+    },
+    "android": {
+      "package": "com.dualcall.app"
+    },
+    "web": { "bundler": "metro" },
+    "plugins": [
+      "expo-notifications",
+      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }],
+      [
+        "@config-plugins/react-native-webrtc",
+        {
+          "cameraPermission": "Kamera kullanılmaz; ses köprüsü için gereklidir.",
+          "microphonePermission": "Sesli köprü için mikrofon gerekir."
+        }
+      ],
+      "./plugins/withDualCallAndroid"
+    ],
+    "extra": { "serverUrl": "http://localhost:4242" }
+  }
+}
