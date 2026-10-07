@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Txt from './Txt';
@@ -37,6 +39,8 @@ export default function PairingModal({
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState('');
+  const [scanning, setScanning] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => setUrl(defaultUrl), [defaultUrl]);
 
@@ -52,6 +56,30 @@ export default function PairingModal({
   const digits = code.replace(/\D/g, '').slice(0, 6);
   const me = session?.device?.id;
   const others = (peers || []).filter((p) => p.id !== me);
+
+  if (scanning) {
+    return (
+      <Modal visible={true} animationType="slide">
+        <View style={{ flex: 1, backgroundColor: '#000' }}>
+          <CameraView
+            style={{ flex: 1 }}
+            barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+            onBarcodeScanned={({ data }) => {
+              const scannedDigits = (data || '').replace(/\D/g, '').slice(0, 6);
+              if (scannedDigits.length === 6) {
+                setScanning(false);
+                setCode(scannedDigits);
+                run('join', () => onJoin({ code: scannedDigits, role, url: normalizeServerUrl(url) }));
+              }
+            }}
+          />
+          <Pressable onPress={() => setScanning(false)} style={[s.primary, { margin: 24, marginBottom: insets.bottom + 24 }]}>
+            <Txt weight="bold" style={s.primaryText}>Kapat</Txt>
+          </Pressable>
+        </View>
+      </Modal>
+    );
+  }
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={session ? onClose : undefined}>
@@ -71,6 +99,9 @@ export default function PairingModal({
               <View style={s.card}>
                 <Txt weight="semi" style={s.label}>Eşleşme kodu</Txt>
                 <CodeBoxes code={session.code} />
+                <View style={{ marginVertical: 8, padding: 12, backgroundColor: '#fff', borderRadius: 12 }}>
+                  <QRCode value={session.code} size={160} color="#000" backgroundColor="#fff" />
+                </View>
                 <Txt style={s.muted}>Eşleşme tamamlanınca kod kilitlenir; başka cihaz katılamaz.</Txt>
               </View>
 
@@ -128,9 +159,18 @@ export default function PairingModal({
 
               <Txt weight="semi" style={[s.label, { marginTop: 12 }]}>Ya da mevcut koda bağlan</Txt>
               <TextInput value={groupCode(digits)} onChangeText={(t) => setCode(t.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" maxLength={7} placeholder="000 000" placeholderTextColor={colors.muted} style={[s.input, s.codeInput]} accessibilityLabel="6 haneli eşleşme kodu" />
-              <Pressable onPress={() => run('join', () => onJoin({ code: digits, role, url: normalizeServerUrl(url) }))} disabled={digits.length !== 6} style={[s.secondary, digits.length !== 6 && { opacity: 0.45 }]} accessibilityRole="button">
-                {busy === 'join' ? <ActivityIndicator color={colors.text} /> : <Txt weight="semi" style={s.secondaryText}>Koda Bağlan</Txt>}
-              </Pressable>
+              
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <Pressable onPress={() => run('join', () => onJoin({ code: digits, role, url: normalizeServerUrl(url) }))} disabled={digits.length !== 6} style={[s.secondary, { flex: 1 }, digits.length !== 6 && { opacity: 0.45 }]} accessibilityRole="button">
+                  {busy === 'join' ? <ActivityIndicator color={colors.text} /> : <Txt weight="semi" style={s.secondaryText}>Koda Bağlan</Txt>}
+                </Pressable>
+                <Pressable onPress={async () => {
+                  if (!permission?.granted) await requestPermission();
+                  setScanning(true);
+                }} style={[s.secondary, { width: 64, backgroundColor: colors.cardSel, borderColor: colors.blue }]}>
+                  <Ionicons name="qr-code-outline" size={24} color={colors.blue} />
+                </Pressable>
+              </View>
             </>
           )}
           {error ? <Txt style={s.error} accessibilityRole="alert">{error}</Txt> : null}

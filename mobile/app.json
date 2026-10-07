@@ -13,12 +13,16 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "audio",
-          "remote-notification"
+          "remote-notification",
+          "voip"
         ],
         "NSMicrophoneUsageDescription": "Sesli köprü için mikrofon gerekir.",
+        "NSCameraUsageDescription": "Eşleşme kodlarını taramak için kameraya erişim gereklidir.",
+        "NSContactsUsageDescription": "Gelen aramaları kişilere eşleştirmek için gereklidir.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       },
       "bitcode": false
     },
@@ -55,7 +59,8 @@
           "microphonePermission": "Sesli köprü için mikrofon gerekir."
         }
       ],
-      "./plugins/withDualCallAndroid"
+      "./plugins/withDualCallAndroid",
+      "./plugins/withDualCallIos"
     ],
     "extra": {
       "serverUrl": "https://dualcell-relay.onrender.com",
