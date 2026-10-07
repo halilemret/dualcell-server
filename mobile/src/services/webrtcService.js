@@ -84,6 +84,32 @@ class WebRTCService {
   // Yanıtlayan taraf (iOS / web / alıcı)
   async handleOffer({ offer }) {
     if (!offer) return;
+    
+    // CallKit çağrı ekranını göster (sadece iOS)
+    if (Platform.OS === 'ios') {
+      const callKeepService = require('./callKeepService').default;
+      
+      return new Promise((resolve) => {
+        callKeepService.setup(
+          async () => {
+            // Aramaya cevap verildiğinde
+            await this._processOffer(offer);
+            resolve();
+          },
+          () => {
+            // Arama reddedildiğinde veya bittiğinde
+            this.stop();
+            resolve();
+          }
+        );
+        callKeepService.displayIncomingCall('DualCall Arama');
+      });
+    } else {
+      await this._processOffer(offer);
+    }
+  }
+
+  async _processOffer(offer) {
     const pc = await this._setup();
     await pc.setRemoteDescription(new RTC.RTCSessionDescription(offer));
     await this._drain();
@@ -147,6 +173,9 @@ class WebRTCService {
     this.pending = [];
     if (this.audioEl) this.audioEl.srcObject = null;
     InCall?.stop();
+    if (Platform.OS === 'ios') {
+      try { require('./callKeepService').default.endCall(); } catch {}
+    }
   }
 }
 
