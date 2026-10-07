@@ -120,8 +120,7 @@ export default function PairingModal({
                 ))}
               </View>
 
-              <Txt weight="semi" style={s.label}>Sunucu adresi</Txt>
-              <TextInput value={url} onChangeText={setUrl} autoCapitalize="none" autoCorrect={false} keyboardType="url" placeholder="http://192.168.1.20:4242" placeholderTextColor={colors.muted} style={s.input} accessibilityLabel="Sunucu adresi" />
+              {/* Sunucu adresi artık arka planda cloud server'a (Render) ayarlı, kullanıcıdan istemeye gerek yok */}
 
               <Pressable onPress={() => run('create', () => onCreate({ role, url: normalizeServerUrl(url) }))} style={s.primary} accessibilityRole="button">
                 {busy === 'create' ? <ActivityIndicator color={colors.onBlue} /> : <Txt weight="bold" style={s.primaryText}>Yeni Kod Üret</Txt>}

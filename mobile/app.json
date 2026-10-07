@@ -58,7 +58,7 @@
       "./plugins/withDualCallAndroid"
     ],
     "extra": {
-      "serverUrl": "http://localhost:4242",
+      "serverUrl": "https://dualcall-server.onrender.com",
       "eas": {
         "projectId": "ea82d395-b44b-4624-95f0-2791cc6826df"
       }
