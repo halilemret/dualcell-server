@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: dualcell-relay
+    name: dualcall-relay
     runtime: node
     rootDir: server
     buildCommand: npm install
