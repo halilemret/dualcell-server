@@ -37,7 +37,12 @@ class SocketService {
     }
     this.disconnect();
     this.url = url;
-    const s = io(url, { transports: ['websocket'], reconnectionDelayMax: 5000, timeout: 8000 });
+    const s = io(url, {
+      transports: ['websocket', 'polling'],
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 30_000,
+      timeout: 12_000,
+    });
     s.on('connect', () => {
       this._local('connection', { connected: true });
       this._resume();

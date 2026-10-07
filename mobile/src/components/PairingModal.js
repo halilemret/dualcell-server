@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Txt from './Txt';
 import { colors, font } from '../theme';
-import { groupCode } from '../utils/misc';
+import { groupCode, normalizeServerUrl } from '../utils/misc';
 
 const ERR = {
   invalid_code: 'Kod geçersiz ya da eşleşme zaten tamamlanmış.',
@@ -123,13 +123,13 @@ export default function PairingModal({
               <Txt weight="semi" style={s.label}>Sunucu adresi</Txt>
               <TextInput value={url} onChangeText={setUrl} autoCapitalize="none" autoCorrect={false} keyboardType="url" placeholder="http://192.168.1.20:4242" placeholderTextColor={colors.muted} style={s.input} accessibilityLabel="Sunucu adresi" />
 
-              <Pressable onPress={() => run('create', () => onCreate({ role, url: url.trim() }))} style={s.primary} accessibilityRole="button">
+              <Pressable onPress={() => run('create', () => onCreate({ role, url: normalizeServerUrl(url) }))} style={s.primary} accessibilityRole="button">
                 {busy === 'create' ? <ActivityIndicator color={colors.onBlue} /> : <Txt weight="bold" style={s.primaryText}>Yeni Kod Üret</Txt>}
               </Pressable>
 
               <Txt weight="semi" style={[s.label, { marginTop: 12 }]}>Ya da mevcut koda bağlan</Txt>
               <TextInput value={groupCode(digits)} onChangeText={(t) => setCode(t.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" maxLength={7} placeholder="000 000" placeholderTextColor={colors.muted} style={[s.input, s.codeInput]} accessibilityLabel="6 haneli eşleşme kodu" />
-              <Pressable onPress={() => run('join', () => onJoin({ code: digits, role, url: url.trim() }))} disabled={digits.length !== 6} style={[s.secondary, digits.length !== 6 && { opacity: 0.45 }]} accessibilityRole="button">
+              <Pressable onPress={() => run('join', () => onJoin({ code: digits, role, url: normalizeServerUrl(url) }))} disabled={digits.length !== 6} style={[s.secondary, digits.length !== 6 && { opacity: 0.45 }]} accessibilityRole="button">
                 {busy === 'join' ? <ActivityIndicator color={colors.text} /> : <Txt weight="semi" style={s.secondaryText}>Koda Bağlan</Txt>}
               </Pressable>
             </>

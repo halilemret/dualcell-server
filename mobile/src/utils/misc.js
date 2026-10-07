@@ -25,3 +25,25 @@ export function safe(fn) {
     /* yoksay */
   }
 }
+
+export function normalizeServerUrl(raw) {
+  if (!raw) return 'http://localhost:4242';
+  let clean = raw.trim();
+  if (!/^https?:\/\//i.test(clean)) {
+    clean = `http://${clean}`;
+  }
+  try {
+    const u = new URL(clean);
+    if (!u.port) {
+      u.port = '4242';
+      clean = u.origin;
+    }
+  } catch {
+    // regex fallback
+    if (!clean.includes(':', 7)) {
+      clean = `${clean}:4242`;
+    }
+  }
+  return clean.replace(/\/+$/, '');
+}
+
