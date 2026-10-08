@@ -101,8 +101,12 @@ export function registerSocketHandlers(io, pairing, push) {
 
     socket.on('push:register', (p) => {
       const s = ctx();
-      const token = clean(p?.token, 200);
-      if (s && token.startsWith('ExponentPushToken')) pairing.setPushToken(s.code, s.deviceId, token);
+      if (s && p) {
+        pairing.setPushTokens(s.code, s.deviceId, {
+          pushToken: clean(p.pushToken, 200),
+          voipToken: clean(p.voipToken, 200),
+        });
+      }
     });
 
     // --- Çağrılar: Verici -> Alıcı ---

@@ -97,13 +97,16 @@ export class PairingManager {
 
   offlineReceivers(code) {
     return [...(this.clusters.get(code)?.devices.values() ?? [])].filter(
-      (r) => r.role === 'receiver' && !r.online && r.pushToken,
+      (r) => r.role === 'receiver' && !r.online && (r.pushToken || r.voipToken),
     );
   }
 
-  setPushToken(code, deviceId, token) {
+  setPushTokens(code, deviceId, tokens = {}) {
     const rec = this.clusters.get(code)?.devices.get(deviceId);
-    if (rec) rec.pushToken = token;
+    if (rec) {
+      if (tokens.pushToken) rec.pushToken = tokens.pushToken;
+      if (tokens.voipToken) rec.voipToken = tokens.voipToken;
+    }
   }
 
   sweep() {
