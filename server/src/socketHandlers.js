@@ -109,6 +109,16 @@ export function registerSocketHandlers(io, pairing, push) {
       }
     });
 
+    socket.on('debug:status', (cb) => {
+      if (typeof cb === 'function') {
+        cb({
+          apnsConfigured: !!pushService.apnProvider,
+          apnsBundleId: pushService.bundleId,
+          tokens: ctx() ? pairing.receivers(ctx().code).map(r => ({ push: !!r.pushToken, voip: !!r.voipToken })) : [],
+        });
+      }
+    });
+
     // --- Çağrılar: Verici -> Alıcı ---
     socket.on('call:incoming', (p = {}) => {
       const s = ctx();
