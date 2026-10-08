@@ -1,6 +1,12 @@
 import { Platform } from 'react-native';
-import RNCallKeep from 'react-native-callkeep';
 import { v4 as uuidv4 } from 'uuid';
+
+let RNCallKeep = null;
+if (Platform.OS === 'ios') {
+  try {
+    RNCallKeep = require('react-native-callkeep').default || require('react-native-callkeep');
+  } catch (e) {}
+}
 
 class CallKeepService {
   constructor() {
@@ -11,12 +17,11 @@ class CallKeepService {
   }
 
   setup(onAnswer, onEnd) {
-    if (Platform.OS !== 'ios') return;
+    if (Platform.OS !== 'ios' || !RNCallKeep) return;
     
     this.onAnswer = onAnswer;
     this.onEnd = onEnd;
 
-    // Eğer daha önce cevaplandıysa ve yeni bir onAnswer bağlandıysa anında tetikle (ör. WebRTC geciktiyse)
     if (this.isAnswered && this.onAnswer) {
       this.onAnswer();
     }
@@ -53,14 +58,14 @@ class CallKeepService {
   }
 
   displayIncomingCall(callerName = 'Gelen Arama', uuid = null) {
-    if (Platform.OS !== 'ios') return;
+    if (Platform.OS !== 'ios' || !RNCallKeep) return;
     if (this.currentCallId) return;
     this.currentCallId = uuid || uuidv4();
     RNCallKeep.displayIncomingCall(this.currentCallId, 'DualCall', callerName, 'generic', false);
   }
 
   endCall() {
-    if (Platform.OS !== 'ios' || !this.currentCallId) return;
+    if (Platform.OS !== 'ios' || !this.currentCallId || !RNCallKeep) return;
     RNCallKeep.endAllCalls();
     this.currentCallId = null;
     this.isAnswered = false;

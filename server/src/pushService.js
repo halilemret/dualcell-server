@@ -33,6 +33,7 @@ export class PushService {
         // VoIP Push Gönderimi (iOS'u uyandırmak için)
         const note = new apn.Notification();
         note.topic = `${this.bundleId}.voip`;
+        note.pushType = 'voip';
         note.payload = message; // Çağrı bilgileri
         try {
           const res = await this.apnProvider.send(note, d.voipToken);
