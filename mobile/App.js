@@ -24,6 +24,7 @@ import DialerModal from './src/components/DialerModal';
 import PairingModal from './src/components/PairingModal';
 import SimulatorModal from './src/components/SimulatorModal';
 import Onboarding from './src/components/Onboarding';
+import PrivacyModal from './src/components/PrivacyModal';
 
 const warn = (e) => console.warn('[DualCall]', e?.message ?? e);
 
@@ -58,6 +59,7 @@ function Root() {
   const [call, setCall] = useState(null);
   const [tab, setTab] = useState('calls');
   const [modal, setModal] = useState(null); // 'onboarding' | 'pairing' | 'dialer' | 'sim'
+  const [privacyModal, setPrivacyModal] = useState(false);
   const [dialPrefill, setDialPrefill] = useState('');
   const [rolePref, setRolePref] = useState(null);
   const [permWarn, setPermWarn] = useState(false);
@@ -382,10 +384,15 @@ function Root() {
           <Txt weight="bold" style={s.title}>DualCall</Txt>
           <Txt style={s.sub}>{!session ? 'Cihazları eşleştirin' : role === 'broadcaster' ? 'Verici: çağrı ve SMS iletiliyor' : 'Alıcı: çağrı ve SMS alınıyor'}</Txt>
         </View>
-        <Pressable onPress={() => setModal('pairing')} accessibilityRole="button" accessibilityLabel={`Eşleşme ayarları, ${status.text}`} style={s.pill}>
-          <View style={[s.dot, { backgroundColor: status.color }]} />
-          <Txt weight="semi" style={s.pillText}>{status.text}</Txt>
-        </Pressable>
+        <View style={s.headerActions}>
+          <Pressable onPress={() => setPrivacyModal(true)} accessibilityRole="button" style={s.shieldBtn}>
+            <Ionicons name="shield-checkmark" size={24} color={colors.green} />
+          </Pressable>
+          <Pressable onPress={() => setModal('pairing')} accessibilityRole="button" style={s.pill}>
+            <View style={[s.dot, { backgroundColor: status.color }]} />
+            <Txt weight="semi" style={s.pillText}>{status.text}</Txt>
+          </Pressable>
+        </View>
       </View>
 
       {permWarn ? (
@@ -428,6 +435,7 @@ function Root() {
       />
       <DialerModal visible={modal === 'dialer'} initialNumber={dialPrefill} onClose={() => setModal(null)} onDial={dialNumber} />
       <SimulatorModal visible={modal === 'sim'} viaBridge={role === 'broadcaster'} onClose={() => setModal(null)} onCall={simCall} onSms={simSms} />
+      <PrivacyModal visible={privacyModal} connected={connected} onClose={() => setPrivacyModal(false)} />
       <IncomingCallModal
         call={call}
         bridgeAvailable={webrtc.supported}
@@ -458,6 +466,8 @@ const s = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 12 },
   title: { fontSize: 28 },
   sub: { fontSize: 14, color: colors.muted, marginTop: 2 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  shieldBtn: { padding: 8 },
   pill: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
   dot: { width: 8, height: 8, borderRadius: 4 },
   pillText: { fontSize: 13, color: colors.soft },
