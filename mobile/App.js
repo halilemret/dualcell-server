@@ -23,6 +23,7 @@ import CallHistoryList from './src/components/CallHistoryList';
 import DialerModal from './src/components/DialerModal';
 import PairingModal from './src/components/PairingModal';
 import SimulatorModal from './src/components/SimulatorModal';
+import Onboarding from './src/components/Onboarding';
 
 const warn = (e) => console.warn('[DualCall]', e?.message ?? e);
 
@@ -56,8 +57,9 @@ function Root() {
   const [history, setHistory] = useState([]);
   const [call, setCall] = useState(null);
   const [tab, setTab] = useState('calls');
-  const [modal, setModal] = useState(null); // 'pairing' | 'dialer' | 'sim'
+  const [modal, setModal] = useState(null); // 'onboarding' | 'pairing' | 'dialer' | 'sim'
   const [dialPrefill, setDialPrefill] = useState('');
+  const [rolePref, setRolePref] = useState(null);
   const [permWarn, setPermWarn] = useState(false);
 
   const callRef = useRef(null);
@@ -154,13 +156,21 @@ function Root() {
         id = `dev_${uid()}`;
         await save('dc.deviceId', id);
       }
-      const [s, m, h] = await Promise.all([load('dc.session', null), load('dc.sms', []), load('dc.history', [])]);
+      const [s, m, h, o, r] = await Promise.all([
+        load('dc.session', null), 
+        load('dc.sms', []), 
+        load('dc.history', []),
+        load('dc.onboarded', false),
+        load('dc.rolePref', null)
+      ]);
       setDeviceId(id);
       setSession(s);
       setSms(m);
       setHistory(h);
+      setRolePref(r);
       setReady(true);
-      if (!s) setModal('pairing');
+      if (!o) setModal('onboarding');
+      else if (!s) setModal('pairing');
       initNotifications();
     })();
   }, []);
@@ -356,6 +366,15 @@ function Root() {
 
   if (!ready) return <View style={s.root} />;
 
+  if (modal === 'onboarding') {
+    return <Onboarding onComplete={async (r) => {
+      await save('dc.onboarded', true);
+      await save('dc.rolePref', r);
+      setRolePref(r);
+      setModal('pairing');
+    }} />;
+  }
+
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
       <View style={s.header}>
@@ -396,6 +415,7 @@ function Root() {
       <PairingModal
         visible={modal === 'pairing'}
         session={session}
+        initialRole={rolePref}
         connected={connected}
         peers={peers}
         defaultUrl={session?.url || defaultServerUrl()}

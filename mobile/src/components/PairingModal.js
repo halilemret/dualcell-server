@@ -31,10 +31,10 @@ function CodeBoxes({ code }) {
 }
 
 export default function PairingModal({
-  visible, session, connected, peers, defaultUrl, canBroadcast, onCreate, onJoin, onLeave, onBattery, onClose,
+  visible, session, connected, peers, defaultUrl, canBroadcast, onCreate, onJoin, onLeave, onBattery, onClose, initialRole
 }) {
   const insets = useSafeAreaInsets();
-  const [role, setRole] = useState(canBroadcast ? 'broadcaster' : 'receiver');
+  const [role, setRole] = useState(initialRole || (canBroadcast ? 'broadcaster' : 'receiver'));
   const [url, setUrl] = useState(defaultUrl);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(null);
