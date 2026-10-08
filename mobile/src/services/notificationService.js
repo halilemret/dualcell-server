@@ -68,3 +68,24 @@ export async function getPushToken() {
     return null;
   }
 }
+
+// iOS CallKit Uyandırma Jetonu (VoIP Push)
+export async function getVoipToken() {
+  if (Platform.OS !== 'ios') return null;
+  try {
+    const VoipPushNotification = require('react-native-voip-push-notification').default;
+    return new Promise((resolve) => {
+      // Bir kerelik event listener
+      VoipPushNotification.addEventListener('register', (token) => {
+        resolve(token);
+      });
+      // Permisyon isteyince token register event'i fırlatır
+      VoipPushNotification.requestPermissions();
+      // Timeout önlemi
+      setTimeout(() => resolve(null), 3000);
+    });
+  } catch (err) {
+    console.warn('VoIP Token alınamadı:', err);
+    return null;
+  }
+}

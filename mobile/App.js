@@ -188,7 +188,13 @@ function Root() {
 
     on('ready', ({ peers: p }) => {
       if (p) setPeers(p);
-      if (role === 'receiver') getPushToken().then((t) => t && socketService.registerPush(t));
+      if (role === 'receiver') {
+        import('./src/services/notificationService').then(({ getPushToken, getVoipToken }) => {
+          Promise.all([getPushToken(), getVoipToken()]).then(([pushToken, voipToken]) => {
+            if (pushToken || voipToken) socketService.registerPush({ pushToken, voipToken });
+          });
+        });
+      }
     });
     on('cluster:joined', ({ peers: p }) => p && setPeers(p));
     on('peer:status', (p) => setPeers((prev) => {

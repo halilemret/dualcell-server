@@ -169,8 +169,8 @@ class SocketService {
     this._send(event, payload);
   }
 
-  registerPush(token) {
-    this._send('push:register', { token });
+  registerPush({ pushToken, voipToken }) {
+    this._send('push:register', { pushToken, voipToken });
   }
 }
 
