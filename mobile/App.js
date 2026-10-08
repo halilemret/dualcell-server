@@ -14,7 +14,7 @@ import { extractOtp } from './src/utils/otp';
 import socketService from './src/services/socketService';
 import audio from './src/services/audioService';
 import webrtc from './src/services/webrtcService';
-import { getPushToken, initNotifications, notifyCall, notifySms } from './src/services/notificationService';
+import { getPushToken, getVoipToken, initNotifications, notifyCall, notifySms } from './src/services/notificationService';
 import { dualCall, nativeAvailable, requestAndroidPermissions, useAndroidNativeListeners } from './src/native/useAndroidNativeListeners';
 import Txt from './src/components/Txt';
 import IncomingCallModal from './src/components/IncomingCallModal';
@@ -173,9 +173,16 @@ function Root() {
       setReady(true);
       if (!o) setModal('onboarding');
       else if (!s) setModal('pairing');
-      initNotifications();
+      
+      const perm = await initNotifications();
+      if (perm && role === 'receiver') {
+        const pt = await getPushToken();
+        const vt = await getVoipToken();
+        if (pt) await save('dc.pushToken', pt);
+        if (vt) await save('dc.voipToken', vt);
+      }
     })();
-  }, []);
+  }, [role]);
 
   useEffect(() => { if (ready) save('dc.session', session); }, [ready, session]);
   useEffect(() => { if (ready) save('dc.sms', sms); }, [ready, sms]);
@@ -198,14 +205,12 @@ function Root() {
     const offs = [];
     const on = (ev, fn) => offs.push(socketService.on(ev, fn));
 
-    on('ready', ({ peers: p }) => {
+    on('ready', async ({ peers: p }) => {
       if (p) setPeers(p);
       if (role === 'receiver') {
-        import('./src/services/notificationService').then(({ getPushToken, getVoipToken }) => {
-          Promise.all([getPushToken(), getVoipToken()]).then(([pushToken, voipToken]) => {
-            if (pushToken || voipToken) socketService.registerPush({ pushToken, voipToken });
-          });
-        });
+        const pt = await load('dc.pushToken');
+        const vt = await load('dc.voipToken');
+        if (pt || vt) socketService.registerPush({ pushToken: pt, voipToken: vt });
       }
     });
     on('cluster:joined', ({ peers: p }) => p && setPeers(p));
