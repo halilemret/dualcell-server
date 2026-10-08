@@ -2,13 +2,14 @@
   "expo": {
     "name": "DualCall",
     "slug": "dualcall",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "scheme": "dualcall",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#0B0F19",
+    "backgroundColor": "#121212",
     "ios": {
       "bundleIdentifier": "com.dualcall.app",
+      "buildNumber": "4",
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
@@ -28,6 +29,7 @@
     },
     "android": {
       "package": "com.dualcall.app",
+      "versionCode": 2,
       "permissions": [
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.CAMERA",

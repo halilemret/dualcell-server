@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import callKeepService from './callKeepService';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -10,6 +11,30 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
+// Arka planda VoIP Push dinleyicisi (Uygulama kapalıyken uyanmak için kritik)
+if (Platform.OS === 'ios') {
+  try {
+    const VoipPushNotification = require('react-native-voip-push-notification').default;
+    VoipPushNotification.addEventListener('notification', (notification) => {
+      // 1. CallKit hazırla
+      callKeepService.setup(null, null);
+      
+      // 2. Bekletmeden arama arayüzünü göster
+      // Apple'ın iOS 13+ kuralı: VoIP push geldiğinde CallKit hemen çağrılmalıdır.
+      const caller = notification.title || notification.body || 'Gelen Arama';
+      callKeepService.displayIncomingCall(caller, notification.uuid);
+      
+      // 3. Bildirim işleminin bittiğini OS'e bildir
+      // Bu yapılmazsa Apple uygulamayı öldürür ve bir daha push göndermez.
+      if (notification.uuid) {
+        VoipPushNotification.onVoipNotificationCompleted(notification.uuid);
+      }
+    });
+  } catch (err) {
+    console.warn('VoIP Listener kurulamadı:', err);
+  }
+}
 
 export async function initNotifications() {
   if (Platform.OS === 'web') return false;
