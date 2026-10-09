@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "a6c0156f-8eb2-4ddd-b73e-e9e4b956767e"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.halilemre.dualcallserver",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}
